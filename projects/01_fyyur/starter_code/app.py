@@ -23,7 +23,7 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# TODO: connect to a local postgresql database - Done
+# TODO: connect to a local postgresql database - done
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -40,8 +40,12 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean, default=False)
+    seeking_description = db.Column(db.String(300))
+    artists = db.relationship('Artist', secondary='shows', backref=db.backref('venues', lazy=True))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -54,12 +58,16 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(120))
+    seeking_venue = db.Column(db.Boolean, default=False)
+    seeking_description = db.Column(db.String(300))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
 
-# class Show(db.Model):
-#   __tablename__ = 'Show'
-
+shows = db.Table('shows',
+       db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
+       db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
+)
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
@@ -138,25 +146,25 @@ def show_venue(venue_id):
   data1={
     "id": 1,
     "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
+    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"], # missing in venue
     "address": "1015 Folsom Street",
     "city": "San Francisco",
     "state": "CA",
     "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
+    "website": "https://www.themusicalhop.com", # missing in venue
     "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
+    "seeking_talent": True, # missing in venue
+    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.", # missing in venue
     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
     "past_shows": [{
       "artist_id": 4,
       "artist_name": "Guns N Petals",
       "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
       "start_time": "2019-05-21T21:30:00.000Z"
-    }],
-    "upcoming_shows": [],
-    "past_shows_count": 1,
-    "upcoming_shows_count": 0,
+    }], # missing in venue
+    "upcoming_shows": [], # missing in venue
+    "past_shows_count": 1, # missing in venue
+    "upcoming_shows_count": 0, # missing in venue
   }
   data2={
     "id": 2,
