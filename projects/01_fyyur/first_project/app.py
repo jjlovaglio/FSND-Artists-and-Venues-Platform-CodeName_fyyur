@@ -409,7 +409,7 @@ def search_artists():
 
   return render_template('pages/search_artists.html', results=response, search_term=search_term)
 
-@app.route('/artists/<int:artist_id>')
+@app.route('/artist/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id - done
@@ -682,7 +682,7 @@ def create_show_submission():
 
 #  Update Venues & Artists
 #  ----------------------------------------------------------------
-@app.route('/artists/<int:artist_id>/edit', methods=['GET'])
+@app.route('/artist/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
   form = ArtistForm()
   artist = Artist.query.get(artist_id)
@@ -710,7 +710,7 @@ def edit_artist(artist_id):
   # TODO: populate form with fields from artist with ID <artist_id> - done
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
-@app.route('/artists/<int:artist_id>/edit', methods=['POST'])
+@app.route('/artist/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes - done
