@@ -1,7 +1,13 @@
 from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL
+from wtforms.validators import DataRequired, AnyOf, URL, Length, ValidationError
+import re
+
+def isValidPhone(form, field):
+
+    if not re.search(r"^[0-9]{3}-[0-9]{3}-[0-9]{4}$", field.data) and len(field.data) > 10:
+        raise ValidationError("Invalid phone number. Please use format: xxx-xxx-xxxx ")
 
 class ShowForm(FlaskForm):
     artist_id = StringField(
@@ -83,13 +89,13 @@ class VenueForm(FlaskForm):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'phone', validators=[isValidPhone, Length(min=10, max=18)]
     )
     image_link = StringField(
         'image_link'
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
+        # TODO implement enum restriction - done
         'genres', validators=[DataRequired()],
         choices=[
             ('Alternative', 'Alternative'),
@@ -125,6 +131,7 @@ class ArtistForm(FlaskForm):
         'city', validators=[DataRequired()]
     )
     state = SelectField(
+        # TODO implement validation logic for state
         'state', validators=[DataRequired()],
         choices=[
             ('AL', 'AL'),
@@ -181,8 +188,7 @@ class ArtistForm(FlaskForm):
         ]
     )
     phone = StringField(
-        # TODO implement validation logic for state
-        'phone'
+        'phone', validators=[isValidPhone, Length(min=10, max=18)]
     )
     image_link = StringField(
         'image_link'
@@ -217,4 +223,4 @@ class ArtistForm(FlaskForm):
         'facebook_link', validators=[URL()]
     )
 
-# TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
+# TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM - done

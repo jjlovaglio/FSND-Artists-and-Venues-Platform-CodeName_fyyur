@@ -14,6 +14,7 @@ from flask_wtf import form
 from forms import *
 from flask_migrate import Migrate
 import sys
+import itertools
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -34,14 +35,14 @@ class Venue(db.Model):
     __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, unique=True)
     genres = db.Column(db.String(120))
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
+    phone = db.Column(db.String(120), unique=True)
     image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    facebook_link = db.Column(db.String(120), unique=True)
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(300))
@@ -60,14 +61,14 @@ class Artist(db.Model):
     __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, unique=True)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    facebook_link = db.Column(db.String(120), nullable=True, unique=True)
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(300))
@@ -76,7 +77,9 @@ class Artist(db.Model):
     def __repr__(self):
       return f'''< artist 
                id: {self.id},
-             name: {self.name} >'''
+             name: {self.name},
+             city: {self.city},
+            state: {self.state}>'''
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate - done
 
@@ -119,6 +122,11 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
+  # Stand out
+  # Show Recent Listed Artists and Recently Listed Venues on the homepage, - done 
+  # returning results for Artists and Venues sorting by newly created. - done
+  # Limit to the 10 most recently listed items. - done
+
   recent_venues = Venue.query.order_by(Venue.id).limit(10).all()
   recent_artists = Artist.query.order_by(Artist.id).limit(10).all()
 
@@ -163,13 +171,29 @@ def search_venues():
   # TODO: implement search on venues with partial string search. Ensure it is case-insensitive. - done
   # seach for Hop should return "The Musical Hop". - done
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee" - done
+  
+    # Stand out
+  # TODO: Implement Search Venues by City and State - done
+  # Searching by "San Francisco, CA" should return all venues in San Francisco, CA. - done
+  
   search_term = request.form.get('search_term', '')
-  venue_query = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
+  q1 = Venue.query.all()
+  venue_list = []
+
+  for venue in q1:
+    city_and_state = venue.city + ', ' + venue.state
+    if city_and_state == search_term:
+      venue_list.append(venue)  
+
+
+  q2 = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
+  venue_list += q2
+ 
   response = {
-    "count": len(venue_query),
+    "count": len(venue_list),
     "data": []
   }
-  for venue in venue_query:
+  for venue in venue_list:
     response["data"].append({
       "id": venue.id,
       "name": venue.name
@@ -317,15 +341,18 @@ def create_venue_submission():
   form = VenueForm(request.form, meta={'csrf': False})
   if form.validate():
     try:
-      venue = Venue(
-        name = form.name.data,
-        city = form.city.data,
-        state = form.state.data,
-        address = form.address.data,
-        phone = form.phone.data,
-        genres = form.genres.data,
-        facebook_link = form.facebook_link.data 
-      )
+      # venue = Venue(
+      #   name = form.name.data,
+      #   city = form.city.data,
+      #   state = form.state.data,
+      #   address = form.address.data,
+      #   phone = form.phone.data,
+      #   genres = form.genres.data,
+      #   facebook_link = form.facebook_link.data 
+      # )
+      venue = Venue()
+      form.populate_obj(venue)
+      print(form)
       db.session.add(venue)
       db.session.commit()
       # on successful db insert, flash success
@@ -359,7 +386,7 @@ def delete_venue(venue_id):
     venue = Venue.query.get(venue_id)
     db.session.delete(venue)
     db.session.commit()
-    flash(f'Venue: {venue.name} was succesfully deleted!')
+    flash(f'Venue: {venue.name} was successfully deleted!')
   except:
     error = True
     db.session.rollback()
@@ -380,31 +407,49 @@ def delete_venue(venue_id):
 def artists():
   # TODO: replace with real data returned from querying the database - done
   artist_query = Artist.query.order_by(Artist.name).all()
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
+  # data=[{
+  #   "id": 4,
+  #   "name": "Guns N Petals",
+  # }, {
+  #   "id": 5,
+  #   "name": "Matt Quevedo",
+  # }, {
+  #   "id": 6,
+  #   "name": "The Wild Sax Band",
+  # }]
   return render_template('pages/artists.html', artists=artist_query)
+
+
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive. - done
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band". - done
   # search for "band" should return "The Wild Sax Band". - done
+
+  # Stand out
+  # TODO: Implement Search Artists by City and State, and Search Venues by City and State. - done
+  # Searching by "San Francisco, CA" should return all artists or venues in San Francisco, CA. - done
+
   search_term = request.form.get('search_term', '')
-  artist_query = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
+  q1 = Artist.query.all()
+  artist_list = []
+
+  for artist in q1:
+    city_and_state = artist.city + ', ' + artist.state
+    if city_and_state == search_term:
+      artist_list.append(artist)
+
+  q2 = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
+  artist_list += q2
+
+
   response = {
-    "count": len(artist_query),
+    "count": len(artist_list),
     "data": []
   }
 
-  for artist in artist_query:
+  for artist in artist_list:
     response["data"].append({
       "id": artist.id,
       "name": artist.name
