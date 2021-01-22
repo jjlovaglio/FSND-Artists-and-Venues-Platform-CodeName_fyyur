@@ -590,14 +590,18 @@ def create_artist_submission():
   form = ArtistForm(request.form, meta={'csrf': False})
   if form.validate():
       try:
-        artist = Artist(
-          name = form.name.data,
-          city = form.city.data,
-          state = form.state.data,
-          phone = form.phone.data,
-          genres = form.genres.data,
-          facebook_link = form.facebook_link.data 
-        )
+        # alternative way to populate fields from line 603:
+        # artist = Artist(
+        #   name = form.name.data,
+        #   city = form.city.data,
+        #   state = form.state.data,
+        #   phone = form.phone.data,
+        #   genres = form.genres.data,
+        #   facebook_link = form.facebook_link.data 
+        # )
+        
+        artist = Artist()
+        form.populate_obj(artist)
         db.session.add(artist)
         db.session.commit()
         # on successful db insert, flash success
