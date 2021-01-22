@@ -36,13 +36,13 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
-    genres = db.Column(db.String(120))
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120), unique=True)
-    image_link = db.Column(db.String(500))
+    genres = db.Column(db.String(120))
     facebook_link = db.Column(db.String(120), unique=True)
+    image_link = db.Column(db.String(500))
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(300))
@@ -352,7 +352,6 @@ def create_venue_submission():
       # )
       venue = Venue()
       form.populate_obj(venue)
-      print(form)
       db.session.add(venue)
       db.session.commit()
       # on successful db insert, flash success
@@ -732,15 +731,16 @@ def create_show_submission():
 #  ----------------------------------------------------------------
 @app.route('/artist/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  form = ArtistForm()
   artist = Artist.query.get(artist_id)
+  form = ArtistForm(obj=artist)
 
-  form.name.data = artist.name
-  form.state.data = artist.state
-  form.city.data = artist.city
-  form.phone.data = artist.phone
-  form.genres.data = artist.genres
-  form.facebook_link.data = artist.facebook_link
+  # Alternative loading of data from line 735:
+  # form.name.data = artist.name
+  # form.state.data = artist.state
+  # form.city.data = artist.city
+  # form.phone.data = artist.phone
+  # form.genres.data = artist.genres
+  # form.facebook_link.data = artist.facebook_link
 
   artist={
     "id": artist.id,
@@ -789,30 +789,34 @@ def edit_artist_submission(artist_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
-  form = VenueForm()
   venue = Venue.query.get(venue_id)
-
-  form.name.data = venue.name
-  form.city.data = venue.city
-  form.state.data = venue.state
-  form.address.data = venue.address
-  form.phone.data = venue.phone
-  form.genres.data = venue.genres
-  form.facebook_link.data = venue.facebook_link
+  form = VenueForm(obj=venue)
+  # Alterntive loading of data from line 792:
+  # form.name.data = venue.name
+  # form.city.data = venue.city
+  # form.state.data = venue.state
+  # form.address.data = venue.address
+  # form.phone.data = venue.phone
+  # form.genres.data = venue.genres
+  # form.facebook_link.data = venue.facebook_link
+  # form.image_link.data = venue.image_link
+  # form.website.data = venue.website
+  # form.seeking_talent.data = venue.seeking_talent
+  # form.seeking_description.data = venue.seeking_description
 
   venue={
     "id": venue.id,
     "name": venue.name,
-    "genres": venue.genres,
-    "city": venue.city,
-    "state": venue.state,
-    "address": venue.address,
-    "phone": venue.phone,
-    "website": venue.website,
-    "facebook_link": venue.facebook_link,
-    "seeking_talent": venue.seeking_talent,
-    "seeking_description": venue.seeking_description,
-    "image_link": venue.image_link
+    # "genres": venue.genres,
+    # "city": venue.city,
+    # "state": venue.state,
+    # "address": venue.address,
+    # "phone": venue.phone,
+    # "website": venue.website,
+    # "facebook_link": venue.facebook_link,
+    # "seeking_talent": venue.seeking_talent,
+    # "seeking_description": venue.seeking_description,
+    # "image_link": venue.image_link
   }
   # TODO: populate form with values from venue with ID <venue_id> - done
   return render_template('forms/edit_venue.html', form=form, venue=venue)
@@ -821,16 +825,22 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing - done
   # venue record with ID <venue_id> using the new attributes - done
-  form_venue = VenueForm(request.form)
   db_venue = Venue.query.get(venue_id)
+  form_venue = VenueForm(request.form)
   error = False
   try:
+
     db_venue.name = form_venue.name.data
     db_venue.city = form_venue.city.data
     db_venue.state = form_venue.state.data
     db_venue.phone = form_venue.phone.data
     db_venue.genres = form_venue.genres.data
     db_venue.facebook_link = form_venue.facebook_link.data
+    db_venue.image_link = form_venue.image_link.data
+    db_venue.website = form_venue.website.data
+    db_venue.seeking_talent = form_venue.seeking_talent.data
+    db_venue.seeking_description = form_venue.seeking_description.data
+
     db.session.add(db_venue)
     db.session.commit()
   except ValueError as e:
@@ -843,7 +853,6 @@ def edit_venue_submission(venue_id):
     else:
       flash('An error occurred. Venue could not be updated.')
     db.session.close()
-
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 
