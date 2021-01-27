@@ -37,12 +37,12 @@ def create_app(test_config=None):
   @app.route('/categories')
   def get_categories():
     categories = Category.query.order_by(Category.id).all()
-    formatted_categories = [category.format() for category in categories]
+    formatted_categories = {category.id:category.type for category in categories}
 
     return jsonify({
       'success': True,
       'categories': formatted_categories,
-      'total_categories': len(categories)
+      'total_categories': len(Category.query.all())
 
     })
 
@@ -65,6 +65,7 @@ def create_app(test_config=None):
     end = start + QUESTIONS_PER_PAGE
     questions = [question.format() for question in selection]
     current_questions = questions[start:end]
+
     return current_questions
 
   @app.route('/questions', methods=['GET'])
@@ -123,14 +124,30 @@ def create_app(test_config=None):
   @TODO: 
   Create an endpoint to POST a new question, 
   which will require the question and answer text, 
-  category, and difficulty score.
+  category, and difficulty score. - done
 
   TEST: When you submit a question on the "Add" tab, 
   the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
+  of the questions list in the "List" tab.  - done
   '''
 
+  @app.route('/questions', methods=['POST'])
+  def create_question():
+    body = request.get_json()
+    
+    new_question = body.get('question', None)
+    new_answer = body.get('answer', None)
+    new_category = body.get('category', None)
+    new_difficulty = body.get('difficulty', None)
 
+    question = Question(question=new_question, answer=new_answer, category=new_category, difficulty=new_difficulty)
+    question.insert()
+    print(f'question: {question.id} {question.question} was created!')
+
+    return jsonify({
+        'success':True,
+
+      })
 
 
   '''
