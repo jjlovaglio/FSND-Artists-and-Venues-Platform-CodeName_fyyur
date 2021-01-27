@@ -58,20 +58,20 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. - done
   '''
-  QUESTIONS_PER_PAGE = 10
-  def paginate_questions(request, selection):
+  SELECTION_PER_PAGE = 10
+  def paginate(request, selection):
     page = request.args.get('page', 1, type=int)
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    questions = [question.format() for question in selection]
-    current_questions = questions[start:end]
+    start = (page - 1) * SELECTION_PER_PAGE
+    end = start + SELECTION_PER_PAGE
+    selection = [item.format() for item in selection]
+    current_selection = selection[start:end]
 
-    return current_questions
+    return current_selection
 
   @app.route('/questions', methods=['GET'])
   def get_questions():
     selection = Question.query.order_by(Question.id).all()
-    current_questions = paginate_questions(request, selection)
+    current_questions = paginate(request, selection)
 
     if len(current_questions) == 0:
       abort(404)
@@ -107,7 +107,7 @@ def create_app(test_config=None):
     question.delete()
     print(f'question: {question.id} {question.question} was deleted from db.')
     selection = Question.query.order_by(Question.id).all()
-    current_questions = paginate_questions(request, selection)
+    current_questions = paginate(request, selection)
     categories = Category.query.order_by(Category.id).all()
     formatted_categories = {category.id:category.type for category in categories}
     return jsonify({
@@ -134,6 +134,9 @@ def create_app(test_config=None):
   @app.route('/questions', methods=['POST'])
   def create_question():
     body = request.get_json()
+
+    if body is None:
+      abort(400)
     
     new_question = body.get('question', None)
     new_answer = body.get('answer', None)
@@ -154,12 +157,36 @@ def create_app(test_config=None):
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
-  is a substring of the question. 
+  is a substring of the question. - done
 
   TEST: Search by any phrase. The questions list will update to include 
   only question that include that string within their question. 
-  Try using the word "title" to start. 
+  Try using the word "title" to start. - done
   '''
+
+  @app.route('/questions/search', methods=['POST'])
+  def search_questions():
+    data = request.get_json()
+    search_term = data.get('searchTerm')
+
+    if not search_term:
+      abort(422)
+    
+    questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+    if not questions:
+      abort(422)
+    
+    paginated_questions = paginate(request, questions)
+
+    return jsonify({
+      'success': True,
+      'questions': paginated_questions,
+
+    })
+
+
+
+
 
   '''
   @TODO: 
