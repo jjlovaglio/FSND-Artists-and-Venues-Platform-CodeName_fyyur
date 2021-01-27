@@ -49,14 +49,14 @@ def create_app(test_config=None):
   '''
   @TODO: 
   Create an endpoint to handle GET requests for questions, 
-  including pagination (every 10 questions). 
+  including pagination (every 10 questions). - done
   This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
+  number of total questions, current category, categories. - done
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,
   ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions. 
+  Clicking on the page numbers should update the questions. - done
   '''
   QUESTIONS_PER_PAGE = 10
   def paginate_questions(request, selection):
@@ -90,11 +90,34 @@ def create_app(test_config=None):
 
   '''
   @TODO: 
-  Create an endpoint to DELETE question using a question ID. 
+  Create an endpoint to DELETE question using a question ID. - done
 
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page. 
+  TEST: When you click the trash icon next to a question, the question will be removed. - done
+  This removal will persist in the database and when you refresh the page. - done
   '''
+
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
+
+    question = Question.query.filter(Question.id == question_id).one_or_none()
+
+    if question is None:
+      abort(404)
+    question.delete()
+    print(f'question: {question.id} {question.question} was deleted from db.')
+    selection = Question.query.order_by(Question.id).all()
+    current_questions = paginate_questions(request, selection)
+    categories = Category.query.order_by(Category.id).all()
+    formatted_categories = {category.id:category.type for category in categories}
+    return jsonify({
+      'success':True,
+      'questions':current_questions,
+      'categories': formatted_categories,
+      'total_questions': len(Question.query.all()),
+      'current_category':None,
+    })
+
+
 
   '''
   @TODO: 
@@ -106,6 +129,9 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+
+
+
 
   '''
   @TODO: 
