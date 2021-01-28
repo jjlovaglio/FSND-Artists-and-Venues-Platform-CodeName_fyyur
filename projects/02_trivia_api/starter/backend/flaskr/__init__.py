@@ -277,6 +277,30 @@ def create_app(test_config=None):
   including 404 and 422. 
   '''
   
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+        'success': False,
+        'error': 404,
+        'message': "Not Found: The request resource could not be found"
+    }), 404
+
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+        'success': False,
+        'error': 400,
+        'message': "Bad Request: The request cannot be fulfilled due to bad syntax"
+    }), 400
+
+  @app.errorhandler(422)
+  def unprocessable_entity(error):
+    return jsonify({
+        'success': False,
+        'error': 422,
+        'message': "Unprocessable Entity: The request was well formed but was unable to be followed due to semantic errors"
+    }), 422
+
   return app
 
     
