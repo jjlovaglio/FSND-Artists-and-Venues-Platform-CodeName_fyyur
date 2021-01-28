@@ -223,6 +223,54 @@ def create_app(test_config=None):
   and shown whether they were correct or not. 
   '''
 
+  @app.route('/quizzes', methods=['POST'])
+  def play_quiz():
+    # get questions to play the quiz
+    body = request.get_json()
+    # take previous_question parameter
+    previous_questions = body.get('previous_questions', [])
+    # take category parameter
+    quiz_category = body.get('quiz_category', None)
+    # return a random question within the given category if provided and
+    # that is not one of the previous questions.
+
+    # get category_id from frontend
+    category_id = int(quiz_category["id"])
+    # if there is a quiz category and if the id is 0,
+    # query all questions
+    # else, filter questions by category id.
+    if quiz_category:
+      if quiz_category["id"] == 0:
+        quiz = Question.query.all()
+      else:
+        quiz = Question.query.filter_by(category=category_id).all()
+    # if there are no questions for the selected category, abort 422.
+    if not quiz:
+      return abort(422)
+    selected = []
+    # for every question in the quiz, if its id is not in the previous_questions list,
+    # append question to selected list formatted as a dict.
+    for question in quiz:
+      if question.id not in previous_questions:
+        selected.append(question.format())
+    # if selected contains questions
+    if len(selected) != 0:
+      # select a random question and
+      result = random.choice(selected)
+      # return to frontend as a JSON object
+      return jsonify({
+        'question': result
+      })
+    # else, return question key as false.
+    else:
+      return jsonify({
+        'question': False
+      })
+
+
+
+
+
   '''
   @TODO: 
   Create error handlers for all expected errors 
