@@ -274,8 +274,15 @@ def create_app(test_config=None):
   '''
   @TODO: 
   Create error handlers for all expected errors 
-  including 404 and 422. 
+  including 404 and 422. - done
   '''
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+        'success': False,
+        'error': 400,
+        'message': "Bad Request: The request cannot be fulfilled due to bad syntax"
+    }), 400
   
   @app.errorhandler(404)
   def not_found(error):
@@ -285,16 +292,16 @@ def create_app(test_config=None):
         'message': "Not Found: The request resource could not be found"
     }), 404
 
-  @app.errorhandler(400)
-  def bad_request(error):
+  @app.errorhandler(405)
+  def not_allowed(error):
     return jsonify({
         'success': False,
-        'error': 400,
-        'message': "Bad Request: The request cannot be fulfilled due to bad syntax"
-    }), 400
+        'error': 405,
+        'message': "Method not allowed"
+    }), 405
 
   @app.errorhandler(422)
-  def unprocessable_entity(error):
+  def unprocessable(error):
     return jsonify({
         'success': False,
         'error': 422,
