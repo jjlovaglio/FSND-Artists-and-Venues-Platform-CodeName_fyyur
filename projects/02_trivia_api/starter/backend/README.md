@@ -72,20 +72,129 @@ This README is missing documentation of your endpoints. Below is an example for 
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions'
+DELETE '/questions/{question_id}'
+POST '/questions/search'
+POST '/categories/{category_id}/questions'
+POST '/quizzes'
 
 GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
-{'1' : "Science",
-'2' : "Art",
-'3' : "Geography",
-'4' : "History",
-'5' : "Entertainment",
-'6' : "Sports"}
+
+    {'1' : "Science",
+    '2' : "Art",
+    '3' : "Geography",
+    '4' : "History",
+    '5' : "Entertainment",
+    '6' : "Sports"}
+
+GET '/questions'
+- Fetches a dictionary of questions, answers, difficulty and category
+- Request Arguments: None
+- Returns a JSON dictionary of questions, a dictionary of categories, success value, current category number and total number of questions.
+- Sample: curl http://localhost:3000/questions
+
+    {
+    "questions":[{
+        "question":"What is the title of the 1990 fantasy directed by Tim Burton ...?",
+        "answer":"Edward Scissorhands",
+        "id":6,
+        "difficulty":2
+        },
+        {...},
+        {...}],
+    "Categories": 
+            {"1":"Science",
+            "2":"Art",
+            "3":"Geography",
+            ...}
+    "Success": True,
+    "current_category": None,
+    "total_questions": 10
+    }
+
+DELETE '/questions/{question_id}'
+- Deletes questions by question_id
+- Request Arguments: question_id
+- Returns a JSON dictionary with success value, questions, categories and total number of questions and current category.
+- Sample: curl -X DELETE http://localhost:3000/questions/4
+
+    {
+    "Success": True,
+    "questions":[{
+        "question":"What is the title of the 1990 fantasy directed by Tim Burton ...?",
+        "answer":"Edward Scissorhands",
+        "id":6,
+        "difficulty":2
+        },
+        {...},
+        {...}],
+    "Categories": 
+            {"1":"Science",
+            "2":"Art",
+            "3":"Geography",
+            ...}
+    "total_questions": 10
+    "current_category": None,
+    }
+
+POST '/questions/search'
+- Character insensitive search for questions
+- Request Argument: {'searchTerm':'<term_to_be_searched>'}
+- Returns a JSON dictionary with success value and questions that match the search term.
+- Sample: curl -X POST 'http://localhost:3000/questions/search -H 'Content-Type: application/json'  -d '{"searchTerm":"<term_to_be_searched>"}'
+
+    {
+        "success": True,
+        "questions":[{
+        "question":"What is the title of the 1990 fantasy directed by Tim Burton ...?",
+        "answer":"Edward Scissorhands",
+        "id":6,
+        "difficulty":2
+        },
+        {...},
+        {...}]
+    }
+
+POST '/categories/{category_id}/questions'
+- Get questions by category
+- Request Argument: category_id
+- Returns a JSON dictionary with success value, list of questions that belong to the category, total number of questions and current category.
+- Sample: curl -X POST 'http://localhost:3000/categories/3/questions'
+
+    {
+    "Success": True,
+    "questions":[{
+        "question":"What is the title of the 1990 fantasy directed by Tim Burton ...?",
+        "answer":"Edward Scissorhands",
+        "id":6,
+        "difficulty":2
+        },
+        {...},
+        {...}],
+    "Categories": 
+            {"1":"Science",
+            "2":"Art",
+            "3":"Geography",
+            ...}
+    "total_questions": 10
+    "current_category": None,
+    }
+
+POST '/quizzes'
+- Endpoint for quizzes
+- Request Argument: previous question and category
+- Returns a randomly selected question or a false boolean if no question available
+
+        {
+        "question":"What is the title of the 1990 fantasy directed by Tim Burton ...?",
+        "answer":"Edward Scissorhands",
+        "id":6,
+        "difficulty":2
+        }
+
 
 ```
 

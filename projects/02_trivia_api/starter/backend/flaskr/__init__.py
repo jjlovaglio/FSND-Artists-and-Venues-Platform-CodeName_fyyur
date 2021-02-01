@@ -40,6 +40,7 @@ def create_app(test_config=None):
     formatted_categories = {category.id:category.type for category in categories}
 
     return jsonify({
+
       'success': True,
       'categories': formatted_categories,
       'total_categories': len(Category.query.all())
@@ -104,6 +105,8 @@ def create_app(test_config=None):
 
     if question is None:
       abort(404)
+      
+    current_category = question.category
     question.delete()
     print(f'question: {question.id} {question.question} was deleted from db.')
     selection = Question.query.order_by(Question.id).all()
@@ -115,7 +118,7 @@ def create_app(test_config=None):
       'questions':current_questions,
       'categories': formatted_categories,
       'total_questions': len(Question.query.all()),
-      'current_category':None,
+      'current_category':current_category,
     })
 
 
@@ -193,7 +196,7 @@ def create_app(test_config=None):
   category to be shown. - done
   '''
 
-  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+  @app.route('/categories/<int:category_id>/questions', methods=['POST'])
   def get_questions_by_category(category_id):
     # get categories from db
     category = Category.query.get(category_id)

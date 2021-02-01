@@ -25,6 +25,12 @@ class TriviaTestCase(unittest.TestCase):
             'difficulty': 2
         }
 
+        self.new_question_2 = Question(
+                            question='test question',
+                             answer='test answer',
+                             category=2,
+                            difficulty=2)
+
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -32,8 +38,6 @@ class TriviaTestCase(unittest.TestCase):
             # create all tables
             self.db.create_all()
     
-
-
 
     def tearDown(self):
         """Executed after each test"""
@@ -83,13 +87,8 @@ class TriviaTestCase(unittest.TestCase):
         """ Tests deleting a question of id:24 """
 
         # dummy question created for testing endpoint
-        question = Question(
-                            question='test question',
-                             answer='test answer',
-                             category=2,
-                            difficulty=2)
         # question inserted in the db
-        question.insert()
+        self.new_question_2.insert()
         # question retrieved from db
         question = Question.query.filter(Question.question == 'test question').one_or_none()
         # question deleted 
@@ -99,7 +98,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
-        self.assertIsNone(data['current_category'])
+        self.assertEqual(data['current_category'], question.category)
 
 
     def test_404_when_question_to_be_deleted_not_found(self):
@@ -170,9 +169,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['message'], "Unprocessable Entity: The request was well formed but was unable to be followed due to semantic errors")
 
 
-    def test_get_questions_by_category(self):
+    def test_post_questions_by_category(self):
 
-        res = self.client().get('/categories/2/questions')
+        res = self.client().post('/categories/2/questions')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
