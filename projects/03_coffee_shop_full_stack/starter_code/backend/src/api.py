@@ -22,11 +22,20 @@ CORS(app)
 '''
 @TODO implement endpoint
     GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
+        it should be a public endpoint - done
+        it should contain only the drink.short() data representation - done
+    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks - done
+        or appropriate status code indicating reason for failure - done
 '''
+@app.route("/drinks")
+def get_drinks():
+    drinks = Drink.query.all()
+    drinks = list(map(Drink.short, Drink.query.all()))
+    result = {
+        "success": True,
+        "drinks": drinks
+    }
+    return jsonify(result)
 
 
 '''
@@ -42,13 +51,46 @@ CORS(app)
 '''
 @TODO implement endpoint
     POST /drinks
-        it should create a new row in the drinks table
+        it should create a new row in the drinks table - done
         it should require the 'post:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-        or appropriate status code indicating reason for failure
+        it should contain the drink.long() data representation - done
+    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink - done
+        or appropriate status code indicating reason for failure - done
 '''
+@app.route("/drinks", methods=['POST',])
+# @requires_auth('post:drinks')
+def post_drinks():
+    # get title and recipe from request
+    title = request.args.get("title")
+    recipe = request.args.get("recipe")
 
+
+    if title is None or recipe is None:
+        abort(400)
+
+    # check that drink is not already in the database
+    drink = Drink.query.filter_by(title=title).one_or_none()
+    if drink is None or drink.title != title :
+        # create & insert object to db
+        drink = Drink(title=title, recipe=recipe)
+        drink.insert()
+        
+        # retrieve newly created drink from database
+        drink = Drink.query.filter_by(title=title).one_or_none()
+
+    else:    
+        # abort and msg in terminal
+        print('Drink already exists in the database.')
+        abort(400)
+
+    formatted_drink = [drink.long()]
+
+
+    result = {
+        "success": True,
+        "drinks": formatted_drink
+    }
+    return jsonify(result)
 
 '''
 @TODO implement endpoint
