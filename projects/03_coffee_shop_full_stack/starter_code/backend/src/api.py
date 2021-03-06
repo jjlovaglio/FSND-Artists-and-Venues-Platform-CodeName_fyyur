@@ -89,21 +89,26 @@ def post_drink(payload):
     title = request.args.get("title")
     recipe = request.args.get("recipe")
 
+    body = request.get_json()
+    if body:
+        title = body['title']
+        recipe = json.dumps([body['recipe']])
+
     if title is None or recipe is None:
         abort(422)
 
     # check that drink is not already in the database
     drink = Drink.query.filter_by(title=title).one_or_none()
     if drink is None or drink.title != title :
-        # create & insert object to db
-        drink = Drink(title=title, recipe=recipe)
-        drink.insert()
-        
-        # retrieve newly created drink from database
-        drink = Drink.query.filter_by(title=title).one_or_none()
-
-    else:    
-        abort(422)
+        try:
+            # create & insert object to db
+            drink = Drink(title=title, recipe=recipe)
+            drink.insert()
+            
+            # retrieve newly created drink from database
+            drink = Drink.query.filter_by(title=title).one_or_none()
+        except:   
+            abort(422)
 
     # format drink object as array for json sending
     formatted_drink = [drink.long()]
@@ -133,7 +138,7 @@ def patch_drink(payload, drink_id):
     drink = Drink.query.get(drink_id)
 
     if drink is None:
-        abort(404)
+        abort(401)
 
     # get updates from request
     title = request.args.get("title")
@@ -174,7 +179,7 @@ def delete_drink(payload, drink_id):
     drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
 
     if drink is None:
-        abort(404)
+        abort(401)
     
     deleted_id = drink.id
     try:
